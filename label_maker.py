@@ -1,11 +1,14 @@
 from docx import Document
 import os
-import tkinter as tk
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
 from tkinter import messagebox
 
+# ---------------- LOGIC (UNCHANGED) ----------------
 def replace_partial_labels(doc_path, output_path, original_text, new_labels):
     doc = Document(doc_path)
     label_index = 0
+
     for para in doc.paragraphs:
         for run in para.runs:
             if original_text in run.text:
@@ -14,6 +17,7 @@ def replace_partial_labels(doc_path, output_path, original_text, new_labels):
                     label_index += 1
                 else:
                     run.text = run.text.replace(original_text, "")
+
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
@@ -25,77 +29,120 @@ def replace_partial_labels(doc_path, output_path, original_text, new_labels):
                                 label_index += 1
                             else:
                                 run.text = run.text.replace(original_text, "")
+
     doc.save(output_path)
-    messagebox.showinfo("Done", f"✅ Created: {output_path} with {label_index} replaced labels.")
+    # messagebox.showinfo("Done", f"✅ Created: {output_path}")
     os.startfile(output_path)
+
 
 template_path = r"D:\Code\LABEL CHANGER\STICKER.docx"
 output_path = r"D:\Code\LABEL CHANGER\newsticker.docx"
 original_text = "LABEL"
 
-# --- GUI ---
 new_labels = []
 
 def add_label():
     label = label_entry.get().strip()
     qty = qty_entry.get().strip()
+
     if not label:
-        messagebox.showwarning("Input Error", "Label cannot be blank.")
+        messagebox.showwarning("Input Error", "Label cannot be blank")
         return
+
     try:
         qty = int(qty)
-        if qty < 1 or qty > 48:
-            messagebox.showwarning("Input Error", "Quantity must be between 1 and 48.")
-            return
+        if not (1 <= qty <= 48):
+            raise ValueError
         new_labels.extend([label] * qty)
-        label_entry.delete(0, tk.END)
-        qty_entry.delete(0, tk.END)
-        total_label.config(text=f"Total labels to insert: {len(new_labels)}")
+        label_entry.delete(0, END)
+        qty_entry.delete(0, END)
+        total_label.config(text=f"Total Labels: {len(new_labels)}")
     except ValueError:
-        messagebox.showerror("Input Error", "Please enter a valid number for quantity.")
+        messagebox.showerror("Input Error", "Quantity must be between 1 and 48")
 
 def run_replace():
     if not new_labels:
-        messagebox.showwarning("No Labels", "Please add at least one label.")
+        messagebox.showwarning("No Labels", "Please add labels first")
         return
     replace_partial_labels(template_path, output_path, original_text, new_labels)
 
 def reset_app():
-    global new_labels
     new_labels.clear()
-    label_entry.delete(0, tk.END)
-    qty_entry.delete(0, tk.END)
-    total_label.config(text="Total labels to insert: 0")
+    label_entry.delete(0, END)
+    qty_entry.delete(0, END)
+    total_label.config(text="Total Labels: 0")
 
-root = tk.Tk()
-root.title("Label Changer")
+# ---------------- MODERN UI ----------------
+app = tb.Window(themename="superhero")   # try: cosmo, flatly, litera, superhero
+app.title("Label Changer Pro")
+app.geometry("480x600")
+app.resizable(False, False)
 
-heading = tk.Label(root, text="Developed by Govardhan Raj", font=("Arial", 25, "bold"))
-heading.pack(pady=10)
+# Center window
+app.place_window_center()
 
-frame = tk.Frame(root)
-frame.pack(pady=10)
+# Header
+header = tb.Label(
+    app,
+    text="Label Changer",
+    font=("Segoe UI", 26, "bold"),
+    bootstyle=INFO
+)
+header.pack(pady=15)
 
-tk.Label(frame, text="Label:").grid(row=0, column=0, padx=5)
-label_entry = tk.Entry(frame)
-label_entry.grid(row=0, column=1, padx=5)
-label_entry.bind("<Return>", lambda event: add_label())  # Bind Enter key
+sub = tb.Label(
+    app,
+    text="Developed by Govardhan Raj",
+    font=("Segoe UI", 11),
+    bootstyle=SECONDARY
+)
+sub.pack()
 
-tk.Label(frame, text="Quantity:").grid(row=1, column=0, padx=5)
-qty_entry = tk.Entry(frame)
-qty_entry.grid(row=1, column=1, padx=5)
-qty_entry.bind("<Return>", lambda event: add_label())    # Bind Enter key
+# Card Frame
+card = tb.Frame(app, padding=25, bootstyle="secondary")
+card.pack(padx=20, pady=25, fill=X)
 
-add_btn = tk.Button(frame, text="Add Label", command=add_label)
-add_btn.grid(row=2, column=1, pady=5)
+tb.Label(card, text="Label Text").pack(anchor=W)
+label_entry = tb.Entry(card, font=("Segoe UI", 12))
+label_entry.pack(fill=X, pady=5)
+label_entry.bind("<Return>", lambda e: add_label())
 
-reset_btn = tk.Button(frame, text="Reset", command=reset_app, bg="red", fg="white")
-reset_btn.grid(row=3, column=2, pady=5)
+tb.Label(card, text="Quantity (1–48)").pack(anchor=W, pady=(10, 0))
+qty_entry = tb.Entry(card, font=("Segoe UI", 12))
+qty_entry.pack(fill=X, pady=5)
+qty_entry.bind("<Return>", lambda e: add_label())
 
-total_label = tk.Label(root, text="Total labels to insert: 0", font=("Arial", 12))
-total_label.pack(pady=5)
+add_btn = tb.Button(
+    card,
+    text="➕ Add Label",
+    bootstyle=SUCCESS,
+    command=add_label
+)
+add_btn.pack(fill=X, pady=12)
 
-run_btn = tk.Button(root, text="Replace & Open Labels", command=run_replace, bg="green", fg="white")
-run_btn.pack(pady=10)
+reset_btn = tb.Button(
+    card,
+    text="♻ Reset",
+    bootstyle=DANGER,
+    command=reset_app
+)
+reset_btn.pack(fill=X)
 
-root.mainloop()
+total_label = tb.Label(
+    app,
+    text="Total Labels: 0",
+    font=("Segoe UI", 13, "bold"),
+    bootstyle=WARNING
+)
+total_label.pack(pady=10)
+
+run_btn = tb.Button(
+    app,
+    text="🚀 Replace & Open File",
+    bootstyle=PRIMARY,
+    width=30,
+    command=run_replace
+)
+run_btn.pack(pady=15)
+
+app.mainloop()
