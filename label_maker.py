@@ -1,3 +1,6 @@
+APP_NAME = "Label Changer Pro"
+APP_VERSION = "1.0.1"
+
 from docx import Document
 import os
 import ttkbootstrap as tb
@@ -34,9 +37,18 @@ def replace_partial_labels(doc_path, output_path, original_text, new_labels):
     # messagebox.showinfo("Done", f"✅ Created: {output_path}")
     os.startfile(output_path)
 
+import sys
 
-template_path = r"D:\Code\LABEL CHANGER\STICKER.docx"
-output_path = r"D:\Code\LABEL CHANGER\newsticker.docx"
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS   # PyInstaller temp folder
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+template_path = resource_path("STICKER.docx")
+output_path = resource_path("newsticker.docx")
+
 original_text = "LABEL"
 
 new_labels = []
@@ -75,8 +87,8 @@ def reset_app():
 # ---------------- MODERN UI ----------------
 app = tb.Window(themename="superhero")   # try: cosmo, flatly, litera, superhero
 app.title("Label Changer Pro")
-app.geometry("480x600")
-app.resizable(False, False)
+app.geometry("550x700")
+app.resizable(True, True)
 
 # Center window
 app.place_window_center()
@@ -84,7 +96,7 @@ app.place_window_center()
 # Header
 header = tb.Label(
     app,
-    text="Label Changer",
+    text=f"{APP_NAME} v{APP_VERSION}",
     font=("Segoe UI", 26, "bold"),
     bootstyle=INFO
 )
@@ -94,7 +106,7 @@ sub = tb.Label(
     app,
     text="Developed by Govardhan Raj",
     font=("Segoe UI", 11),
-    bootstyle=SECONDARY
+    bootstyle="warning"
 )
 sub.pack()
 
@@ -102,12 +114,13 @@ sub.pack()
 card = tb.Frame(app, padding=25, bootstyle="secondary")
 card.pack(padx=20, pady=25, fill=X)
 
-tb.Label(card, text="Label Text").pack(anchor=W)
+tb.Label(card, text="Label Name",font=("Segoe UI", 10, "bold")).pack(anchor=W)
 label_entry = tb.Entry(card, font=("Segoe UI", 12))
 label_entry.pack(fill=X, pady=5)
+
 label_entry.bind("<Return>", lambda e: add_label())
 
-tb.Label(card, text="Quantity (1–48)").pack(anchor=W, pady=(10, 0))
+tb.Label(card, text="Quantity (1–48)",font=("Segoe UI", 10, "bold")).pack(anchor=W, pady=(10, 0))
 qty_entry = tb.Entry(card, font=("Segoe UI", 12))
 qty_entry.pack(fill=X, pady=5)
 qty_entry.bind("<Return>", lambda e: add_label())

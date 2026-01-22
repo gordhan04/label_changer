@@ -5,7 +5,7 @@ a = Analysis(
     ['label_maker.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('STICKER.docx', '.'), ('newsticker.docx', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -35,4 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['logo.ico'],
 )
